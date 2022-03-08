@@ -2,7 +2,7 @@ import { assign, createMachine } from "xstate";
 
 export const services = {
   fetchDetail: async () => {
-    return "detail";
+    return "detaildetaildetaildetaildetaildetail";
   },
 };
 
