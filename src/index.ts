@@ -24,6 +24,9 @@ const machineInterpreter = interpret(machine, {
 machineInterpreter.onTransition((state) => {
   console.log("state change", state.value);
   elm.ports.stateChanged.send(state);
+  if (state.matches("failed")) {
+    machineInterpreter.send("RETRY");
+  }
 });
 
 elm.ports.event.subscribe((event: any) => {
