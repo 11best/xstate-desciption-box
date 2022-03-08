@@ -104,9 +104,10 @@ view : Model -> Html Msg
 view model =
     div []
         [ div
-            [ Attr.style "border" "1px solid black"
+            [ Attr.style "border-radius" "5px"
             , Attr.style "background" "#eb8a83"
-            , Attr.style "width" "fit-content"
+            , Attr.style "width" "15rem"
+            , Attr.style "padding" "0.5rem"
             , Attr.style "cursor" "pointer"
             , onClick DescriptionBoxClicked
             ]
@@ -114,7 +115,13 @@ view model =
         , div []
             [ case model.state of
                 Opened ->
-                    div [] [ text model.detail ]
+                    div
+                        [ Attr.style "background" "#eb8a83"
+                        , Attr.style "padding" "0.5rem"
+                        , Attr.style "width" "15rem"
+                        , Attr.style "border-radius" "5px"
+                        ]
+                        [ text model.detail ]
 
                 _ ->
                     div [ Attr.style "display" "none" ] []
