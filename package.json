@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "parcel src/index.html",
-    "test": "jest"
+    "test": "jest --watch"
   },
   "devDependencies": {
     "@parcel/transformer-elm": "^2.3.2",
