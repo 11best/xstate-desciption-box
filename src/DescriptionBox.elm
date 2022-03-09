@@ -1,4 +1,4 @@
-port module Main exposing (..)
+port module DescriptionBox exposing (..)
 
 import Browser
 import Html exposing (..)
