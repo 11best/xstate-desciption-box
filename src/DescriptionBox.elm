@@ -109,23 +109,25 @@ view model =
             , Attr.style "width" "15rem"
             , Attr.style "padding" "0.5rem"
             , Attr.style "cursor" "pointer"
+            , Attr.style "color" "#FFF"
             , onClick DescriptionBoxClicked
             ]
             [ text "Description" ]
         , div []
-            [ case model.state of
+            (case model.state of
                 Opened ->
-                    div
-                        [ Attr.style "background" "#eb8a83"
+                    [ div
+                        [ Attr.style "background" "#fad366"
                         , Attr.style "padding" "0.5rem"
                         , Attr.style "width" "15rem"
                         , Attr.style "border-radius" "5px"
                         ]
                         [ text model.detail ]
+                    ]
 
                 _ ->
-                    div [ Attr.style "display" "none" ] []
-            ]
+                    [ div [ Attr.style "display" "none" ] [] ]
+            )
         ]
 
 
