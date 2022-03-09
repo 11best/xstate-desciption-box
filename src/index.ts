@@ -3,6 +3,7 @@ import { interpret } from "xstate";
 import { descriptionMachine, services } from "./description-machine";
 // @ts-ignore
 import { Elm as ElmDes } from "./DescriptionBox.elm";
+import { transactionMachine } from "./transaction-machine";
 // @ts-ignore
 import { Elm as ElmTran } from "./TransactionBox.elm";
 
@@ -16,7 +17,7 @@ const elmTran = ElmTran.TransactionBox.init({
   flags: {},
 });
 
-const machine = descriptionMachine(services);
+const desMachine = descriptionMachine(services);
 
 inspect({
   // options
@@ -24,20 +25,38 @@ inspect({
   iframe: false, // open in new window
 });
 
-const machineInterpreter = interpret(machine, {
+const desInterpreter = interpret(desMachine, {
+  devTools: true,
+});
+const tranInterpret = interpret(transactionMachine, {
   devTools: true,
 });
 
-machineInterpreter.onTransition((state) => {
-  console.log("state change", state.value);
+desInterpreter.onTransition((state) => {
+  console.log("description state change", state.value);
+
   elmDes.ports.stateChanged.send(state);
   if (state.matches("failed")) {
-    machineInterpreter.send("RETRY");
+    desInterpreter.send("RETRY");
+  }
+});
+
+tranInterpret.onTransition((state) => {
+  console.log("transaction state change", state.value);
+
+  elmTran.ports.stateChanged.send(state);
+  if (state.matches("failed")) {
+    tranInterpret.send("RETRY");
   }
 });
 
 elmDes.ports.event.subscribe((event: any) => {
-  machineInterpreter.send("DESCRIPTION.CLICKED");
+  desInterpreter.send("DESCRIPTION.CLICKED");
 });
 
-machineInterpreter.start();
+elmTran.ports.event.subscribe((event: any) => {
+  tranInterpret.send("TRANSACTION.CLICKED");
+});
+
+desInterpreter.start();
+tranInterpret.start();
