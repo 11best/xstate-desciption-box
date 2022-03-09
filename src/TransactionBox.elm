@@ -109,7 +109,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         StateChanged m ->
-            ( { model | state = m.state }, Cmd.none )
+            ( { model | state = m.state, transactionList = m.transactionList }, Cmd.none )
 
         TransactionBoxClicked ->
             ( model, event () )
@@ -135,18 +135,28 @@ view model =
         , div []
             (case model.state of
                 Opened ->
-                    [ div
-                        [ Attr.style "background" "#fad366"
-                        , Attr.style "padding" "0.5rem"
-                        , Attr.style "width" "15rem"
-                        , Attr.style "border-radius" "5px"
-                        ]
-                        [ text "List comeon bro" ]
+                    [ div []
+                        (List.map viewTransactionList model.transactionList)
                     ]
 
                 _ ->
                     [ div [ Attr.style "display" "none" ] [] ]
             )
+        ]
+
+
+viewTransactionList : Transaction -> Html Msg
+viewTransactionList transaction =
+    div
+        [ Attr.style "background" "#fad366"
+        , Attr.style "padding" "0.5rem"
+        , Attr.style "width" "15rem"
+        , Attr.style "border-radius" "5px"
+        ]
+        [ span [ Attr.style "padding" "0.25rem" ] [ text transaction.id ]
+        , span [ Attr.style "padding" "0.25rem" ] [ text transaction.itemName ]
+        , span [ Attr.style "padding" "0.25rem" ] [ text (String.fromInt transaction.amount) ]
+        , span [ Attr.style "padding" "0.25rem" ] [ text (String.fromFloat transaction.price) ]
         ]
 
 
