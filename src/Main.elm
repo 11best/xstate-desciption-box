@@ -11,7 +11,7 @@ import Json.Encode as E
 port stateChanged : (E.Value -> msg) -> Sub msg
 
 
-port event : E.Value -> Cmd msg
+port event : () -> Cmd msg
 
 
 type alias Model =
@@ -94,7 +94,7 @@ update msg model =
             ( { model | state = m.state, detail = m.detail }, Cmd.none )
 
         DescriptionBoxClicked ->
-            ( model, event (E.string "fffff") )
+            ( model, event () )
 
         DecodeStateError _ ->
             ( model, Cmd.none )
