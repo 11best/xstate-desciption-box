@@ -16,13 +16,21 @@ port event : () -> Cmd msg
 
 type alias Model =
     { state : State
-    , detail : String
+    , transactionList : List Transaction
+    }
+
+
+type alias Transaction =
+    { id : String
+    , itemName : String
+    , amount : Int
+    , price : Float
     }
 
 
 initialModel : Model
 initialModel =
-    { state = Idle, detail = "" }
+    { state = Idle, transactionList = [] }
 
 
 type State
@@ -36,9 +44,14 @@ type State
 
 {-
    {
-       "value": "idle",
+       "value": "closed",
        "context": {
-           "detail": "datadata",
+           "transactionList": [{
+               "id": "BEST",
+               "itemName": "Negaredama",
+               "amount": 1,
+               "price": 10.046
+           }],
            "failedCount": 2
        }
    }
@@ -47,7 +60,7 @@ type State
 
 modelDecoder : D.Decoder Model
 modelDecoder =
-    D.map2 Model stateDecoder detailDecoder
+    D.map2 Model stateDecoder transactionListDecoder
 
 
 stateDecoder : D.Decoder State
@@ -76,13 +89,18 @@ stateDecoder =
             )
 
 
-detailDecoder : D.Decoder String
-detailDecoder =
-    D.at [ "context", "detail" ] D.string
+transactionListDecoder : D.Decoder (List Transaction)
+transactionListDecoder =
+    D.at [ "context", "transactionList" ] (D.list transactionDecoder)
+
+
+transactionDecoder : D.Decoder Transaction
+transactionDecoder =
+    D.map4 Transaction (D.field "id" D.string) (D.field "itemName" D.string) (D.field "amount" D.int) (D.field "price" D.float)
 
 
 type Msg
-    = DescriptionBoxClicked
+    = TransactionBoxClicked
     | StateChanged Model
     | DecodeStateError D.Error
 
@@ -91,9 +109,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         StateChanged m ->
-            ( { model | state = m.state, detail = m.detail }, Cmd.none )
+            ( { model | state = m.state }, Cmd.none )
 
-        DescriptionBoxClicked ->
+        TransactionBoxClicked ->
             ( model, event () )
 
         DecodeStateError _ ->
@@ -110,23 +128,25 @@ view model =
             , Attr.style "padding" "0.5rem"
             , Attr.style "cursor" "pointer"
             , Attr.style "margin-top" "1rem"
-            , onClick DescriptionBoxClicked
+            , Attr.style "color" "#FFF"
+            , onClick TransactionBoxClicked
             ]
             [ text "Your Transaction" ]
         , div []
-            [ case model.state of
+            (case model.state of
                 Opened ->
-                    div
-                        [ Attr.style "background" "#eb8a83"
+                    [ div
+                        [ Attr.style "background" "#fad366"
                         , Attr.style "padding" "0.5rem"
                         , Attr.style "width" "15rem"
                         , Attr.style "border-radius" "5px"
                         ]
-                        [ text model.detail ]
+                        [ text "List comeon bro" ]
+                    ]
 
                 _ ->
-                    div [ Attr.style "display" "none" ] []
-            ]
+                    [ div [ Attr.style "display" "none" ] [] ]
+            )
         ]
 
 
