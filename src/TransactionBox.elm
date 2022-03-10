@@ -135,7 +135,12 @@ view model =
         , div []
             (case model.state of
                 Opened ->
-                    [ div []
+                    [ div
+                        [ Attr.style "background" "#fad366"
+                        , Attr.style "padding" "0.5rem"
+                        , Attr.style "width" "15rem"
+                        , Attr.style "border-radius" "5px"
+                        ]
                         (List.map viewTransactionList model.transactionList)
                     ]
 
@@ -148,15 +153,11 @@ view model =
 viewTransactionList : Transaction -> Html Msg
 viewTransactionList transaction =
     div
-        [ Attr.style "background" "#fad366"
-        , Attr.style "padding" "0.5rem"
-        , Attr.style "width" "15rem"
-        , Attr.style "border-radius" "5px"
-        ]
-        [ span [ Attr.style "padding" "0.25rem" ] [ text transaction.id ]
-        , span [ Attr.style "padding" "0.25rem" ] [ text transaction.itemName ]
-        , span [ Attr.style "padding" "0.25rem" ] [ text (String.fromInt transaction.amount) ]
-        , span [ Attr.style "padding" "0.25rem" ] [ text (String.fromFloat transaction.price) ]
+        []
+        [ div [ Attr.style "padding" "1rem", Attr.style "display" "inline-block" ] [ text transaction.id ]
+        , div [ Attr.style "padding" "1rem", Attr.style "display" "inline-block" ] [ text transaction.itemName ]
+        , div [ Attr.style "padding" "1rem", Attr.style "display" "inline-block" ] [ text (String.fromInt transaction.amount) ]
+        , div [ Attr.style "padding" "1rem", Attr.style "display" "inline-block" ] [ text (String.fromFloat transaction.price) ]
         ]
 
 

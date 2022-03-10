@@ -82,6 +82,12 @@ export const transactionMachine = createMachine(
             amount: 3,
             price: 11,
           },
+          {
+            id: "BEST",
+            itemName: "Negaredama",
+            amount: 1,
+            price: 10.046,
+          },
         ];
       },
     },
