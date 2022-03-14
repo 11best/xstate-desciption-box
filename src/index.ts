@@ -1,8 +1,11 @@
 import { inspect } from "@xstate/inspect";
 import { interpret } from "xstate";
+//@ts-ignore
+import { Elm as ElmBuy } from "./BuyNFT.elm";
 import { descriptionMachine, services } from "./description-machine";
 // @ts-ignore
 import { Elm as ElmDes } from "./DescriptionBox.elm";
+import { buyNFTMachine } from "./fixedprice-BuyNFT-machine";
 import { transactionMachine } from "./transaction-machine";
 // @ts-ignore
 import { Elm as ElmTran } from "./TransactionBox.elm";
@@ -14,6 +17,11 @@ const elmDes = ElmDes.DescriptionBox.init({
 
 const elmTran = ElmTran.TransactionBox.init({
   node: document.getElementById("tran"),
+  flags: {},
+});
+
+const elmBuy = ElmBuy.BuyNFT.init({
+  node: document.getElementById("buy"),
   flags: {},
 });
 
@@ -29,6 +37,9 @@ const desInterpreter = interpret(desMachine, {
   devTools: true,
 });
 const tranInterpret = interpret(transactionMachine, {
+  devTools: true,
+});
+const buyInterpret = interpret(buyNFTMachine, {
   devTools: true,
 });
 
@@ -50,6 +61,11 @@ tranInterpret.onTransition((state) => {
   }
 });
 
+buyInterpret.onTransition((state) => {
+  console.log("buyNFT state change", state.value);
+  elmBuy.ports.stateChanged.send(state);
+});
+
 elmDes.ports.event.subscribe((event: any) => {
   desInterpreter.send("DESCRIPTION.CLICKED");
 });
@@ -58,5 +74,19 @@ elmTran.ports.event.subscribe((event: any) => {
   tranInterpret.send("TRANSACTION.CLICKED");
 });
 
+elmBuy.ports.event.subscribe((event: any) => {
+  console.log("buy event :", event);
+  if (event === "decrease") {
+    buyInterpret.send("QUANTITY.DECREASECLICKED");
+  }
+  if (event === "increase") {
+    buyInterpret.send("QUANTITY.INCREASECLICKED");
+  }
+  if (event === "buy") {
+    buyInterpret.send("BUYNFT.CLICKED");
+  }
+});
+
 desInterpreter.start();
 tranInterpret.start();
+buyInterpret.start();
