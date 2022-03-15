@@ -136,7 +136,10 @@ export const buyNFTMachine = createMachine(
         };
       }),
       increaseQuantity: assign((context) => {
-        const q = context.quantity === 10 ? 10 : context.quantity + 1;
+        const q =
+          context.quantity === context.whitelistData.remaining_quota
+            ? context.whitelistData.remaining_quota
+            : context.quantity + 1;
         console.log("increase action", q);
         return {
           ...context,
