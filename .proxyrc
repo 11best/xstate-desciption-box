@@ -1,0 +1,8 @@
+{
+  "/services": {
+    "target": "http://localhost:10400",
+    "pathRewrite": {
+      "^/services": ""
+      }
+  }
+}
