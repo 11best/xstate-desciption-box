@@ -34,10 +34,10 @@ inspect({
 });
 
 const desInterpreter = interpret(desMachine, {
-  devTools: true,
+  // devTools: true,
 });
 const tranInterpret = interpret(transactionMachine, {
-  devTools: true,
+  // devTools: true,
 });
 const buyInterpret = interpret(buyNFTMachine, {
   devTools: true,
@@ -62,7 +62,10 @@ tranInterpret.onTransition((state) => {
 });
 
 buyInterpret.onTransition((state) => {
-  console.log("buyNFT state change", state.value);
+  console.log("buyNFT state change", state.value, state.context);
+  if (state.matches("checkQuota")) {
+    buyInterpret.send("QUOTA.CHECKED");
+  }
   elmBuy.ports.stateChanged.send(state);
 });
 

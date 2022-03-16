@@ -38,7 +38,7 @@ export interface Typegen0 {
     };
   };
   invokeSrcNameMap: {
-    checkConnectWallet: "done.invoke.connectwallet";
+    checkWalletConnection: "done.invoke.connectwallet";
     fetchWhitelistStatus: "done.invoke.fetch-whiteliststatus";
     buyNFTRequest: "done.invoke.buyNFT-request";
   };
@@ -49,7 +49,7 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingServices: {
-    checkConnectWallet: "xstate.init";
+    checkWalletConnection: "RETRY";
     fetchWhitelistStatus: "done.invoke.connectwallet";
     buyNFTRequest: "BUYNFT.CLICKED";
   };
@@ -59,11 +59,11 @@ export interface Typegen0 {
   };
   eventsCausingDelays: {};
   matchesStates:
-    | "check_walletConnection"
-    | "check_whitelist"
-    | "check_quota"
-    | "cannot_buy"
-    | "ready_to_buy"
+    | "checkWalletConnection"
+    | "checkWhitelist"
+    | "checkQuota"
+    | "cannotBuy"
+    | "canBuy"
     | "pending"
     | "complete"
     | "error";

@@ -1,11 +1,15 @@
 import { assign, createMachine } from "xstate";
 
+const wallet_addr = "0x9b4c4286cd67f9E20e79B1f8Efd25350646f5b0B";
+
 export const services = {
-  checkConnectWallet: async () => {},
-  fetchWhitelistStatus: async (wallet_address) => {
+  checkWalletConnection: async () => {
+    return true;
+  },
+  fetchWhitelistStatus: async () => {
     let results: Whitelist;
-    fetch(
-      "/services/fixed-price/ampleia/presale-1/whitelist/0x9b4c4286cd67f9E20e79B1f8Efd25350646f5b0B",
+    await fetch(
+      `/services/fixed-price/ampleia/presale-1/whitelist/${wallet_addr}`,
       {
         method: "GET",
         headers: {
@@ -17,7 +21,6 @@ export const services = {
     )
       .then((res) => res.json())
       .then((res) => {
-        console.log("whitelist res :", res);
         results = res;
       });
     return results;
@@ -50,7 +53,8 @@ export const buyNFTMachine = createMachine(
         | { type: "BUYNFT.CLICKED" }
         | { type: "QUANTITY.INCREASECLICKED" }
         | { type: "QUANTITY.DECREASECLICKED" }
-        | { type: "QUOTA.CHECKED" },
+        | { type: "QUOTA.CHECKED" }
+        | { type: "RETRY" },
       services: {} as {
         fetchWhitelistStatus: { data: Whitelist };
       },
@@ -60,48 +64,54 @@ export const buyNFTMachine = createMachine(
       quantity: 1,
     },
     states: {
-      check_walletConnection: {
+      checkWalletConnection: {
         invoke: {
           id: "connectwallet",
-          src: "checkConnectWallet",
+          src: "checkWalletConnection",
           onDone: {
-            target: "check_whitelist",
+            target: "checkWhitelist",
           },
           onError: {
-            target: "cannot_buy",
+            target: "cannotBuy",
           },
         },
       },
-      check_whitelist: {
+      checkWhitelist: {
         invoke: {
           id: "fetch-whiteliststatus",
           src: "fetchWhitelistStatus",
           onDone: {
-            target: "check_quota",
+            target: "checkQuota",
             actions: "updateWhitelistStatus",
           },
           onError: {
-            target: "cannot_buy",
+            target: "cannotBuy",
           },
         },
       },
-      check_quota: {
+      checkQuota: {
         on: {
           "QUOTA.CHECKED": [
-            { target: "cannot_buy", cond: "quotaOff" },
-            { target: "ready_to_buy", cond: "quotaRemains" },
+            { target: "cannotBuy", cond: "quotaOff" },
+            { target: "canBuy", cond: "quotaRemains" },
           ],
         },
       },
-      cannot_buy: {},
-      ready_to_buy: {
+      cannotBuy: {
+        on: {
+          RETRY: {
+            target: "checkWalletConnection",
+          },
+        },
+      },
+      canBuy: {
         on: {
           "QUANTITY.INCREASECLICKED": {
-            target: "ready_to_buy",
+            target: "checkQuota",
             actions: "increaseQuantity",
           },
           "QUANTITY.DECREASECLICKED": {
-            target: "ready_to_buy",
+            target: "checkQuota",
             actions: "decreaseQuantity",
           },
           "BUYNFT.CLICKED": {
@@ -124,7 +134,7 @@ export const buyNFTMachine = createMachine(
       complete: {},
       error: {},
     },
-    initial: "check_walletConnection",
+    initial: "checkWalletConnection",
   },
   {
     services,
@@ -140,7 +150,6 @@ export const buyNFTMachine = createMachine(
           context.quantity === context.whitelistData.remaining_quota
             ? context.whitelistData.remaining_quota
             : context.quantity + 1;
-        console.log("increase action", q);
         return {
           ...context,
           quantity: q,
@@ -148,7 +157,6 @@ export const buyNFTMachine = createMachine(
       }),
       decreaseQuantity: assign((context) => {
         const q = context.quantity > 1 ? context.quantity - 1 : 1;
-        console.log("decrease action", q);
         return {
           ...context,
           quantity: q,
