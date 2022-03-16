@@ -25,8 +25,37 @@ export const services = {
       });
     return results;
   },
-  buyNFTRequest: async () => {
-    throw new Error();
+  buyNFTRequest: async (context) => {
+    await fetch(`/services/fixed-price/ampleia/presale-1/buy`, {
+      method: "POST",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        accept: "application/json",
+        Authorization: "Bearer xxxxx",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        buyer_address: wallet_addr,
+        buy_order: [
+          {
+            contract_address: "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+            quantity: context.buy_order[0].quantity,
+          },
+          {
+            contract_address: "0x2d677Dbe16752A066ef83e382DcC04D7003A61Ed ",
+            quantity: context.buy_order[1].quantity,
+          },
+          {
+            contract_address: "0xcdd02E7849CBBfeaF6401cfDc434999ff5fC0f04",
+            quantity: context.buy_order[2].quantity,
+          },
+        ],
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log("buy log :", res);
+      });
   },
 };
 
@@ -109,7 +138,7 @@ export const buyNFTMachine = createMachine(
         on: {
           "QUOTA.CHECKED": [
             { target: "cannotBuy", cond: "quotaOff" },
-            { target: "canBuy", cond: "quotaRemains" },
+            { target: "canBuy", cond: "quotaRemains", actions: "resetContext" },
           ],
         },
       },
@@ -123,11 +152,9 @@ export const buyNFTMachine = createMachine(
       canBuy: {
         on: {
           "QUANTITY.INCREASECLICKED": {
-            // target: "checkQuota",
             actions: "increaseQuantity",
           },
           "QUANTITY.DECREASECLICKED": {
-            // target: "checkQuota",
             actions: "decreaseQuantity",
           },
           "BUYNFT.CLICKED": {
@@ -140,7 +167,7 @@ export const buyNFTMachine = createMachine(
           id: "buyNFT-request",
           src: "buyNFTRequest",
           onDone: {
-            target: "complete",
+            target: "checkQuota",
           },
           onError: {
             target: "error",
@@ -185,6 +212,7 @@ export const buyNFTMachine = createMachine(
         };
       }),
       decreaseQuantity: assign((context, event) => {
+        //TODO : should - by weight of each box
         const weight = context.totalWeight > 0 ? context.totalWeight - 1 : 0;
 
         //update buy_order
@@ -201,6 +229,17 @@ export const buyNFTMachine = createMachine(
           ...context,
           totalWeight: weight,
           buy_order: list,
+        };
+      }),
+      resetContext: assign((context) => {
+        return {
+          ...context,
+          totalWeight: 0,
+          buy_order: [
+            { nftName: "silver", quantity: 0 },
+            { nftName: "gold", quantity: 0 },
+            { nftName: "platinum", quantity: 0 },
+          ],
         };
       }),
     },

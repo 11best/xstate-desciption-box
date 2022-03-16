@@ -171,10 +171,26 @@ update msg model =
             )
 
         BuyButtonClicked ->
-            ( model, event (E.string "buy") )
+            ( model
+            , event
+                (E.object
+                    [ ( "action"
+                      , E.string "buy"
+                      )
+                    ]
+                )
+            )
 
         DecodeStateError _ ->
             ( model, Cmd.none )
+
+
+orderEncoder : BuyOrder -> E.Value
+orderEncoder order =
+    E.object
+        [ ( "contract_address", E.string order.nftName )
+        , ( "quantity", E.int order.quantity )
+        ]
 
 
 view : Model -> Html Msg
@@ -183,17 +199,6 @@ view model =
         [ div [] (List.map quantityView model.buy_order)
         , buyButtonView model.state
         , buyDetailView model.state
-
-        -- , div []
-        --     (case model.state of
-        --         Idle ->
-        --             [ div
-        --                 []
-        --                 []
-        --             ]
-        --         _ ->
-        --             [ div [] [] ]
-        --     )
         ]
 
 
