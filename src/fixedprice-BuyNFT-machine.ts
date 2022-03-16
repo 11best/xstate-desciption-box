@@ -171,8 +171,10 @@ export const buyNFTMachine = createMachine(
 
         //update buy_order
         let list = context.buy_order;
-        const i = list.find((item) => item.nftName == event.nftName).quantity;
-        let updateList = { nftName: event.nftName, quantity: i + 1 };
+        const getQuantity = list.find(
+          (item) => item.nftName == event.nftName
+        ).quantity;
+        let updateList = { nftName: event.nftName, quantity: getQuantity + 1 };
         list.find((item) => item.nftName == updateList.nftName).quantity =
           updateList.quantity;
 
@@ -187,10 +189,14 @@ export const buyNFTMachine = createMachine(
 
         //update buy_order
         let list = context.buy_order;
-        const i = list.find((item) => item.nftName == event.nftName).quantity;
-        let updateList = { nftName: event.nftName, quantity: i - 1 };
+        const getQuantity = list.find(
+          (item) => item.nftName == event.nftName
+        ).quantity;
+        const currentQuantity = getQuantity > 0 ? getQuantity - 1 : 0;
+        let updateList = { nftName: event.nftName, quantity: currentQuantity };
         list.find((item) => item.nftName == updateList.nftName).quantity =
           updateList.quantity;
+
         return {
           ...context,
           totalWeight: weight,
