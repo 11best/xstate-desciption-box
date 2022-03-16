@@ -79,11 +79,11 @@ elmTran.ports.event.subscribe((event: any) => {
 
 elmBuy.ports.event.subscribe((event: any) => {
   console.log("buy event :", event);
-  if (event === "decrease") {
-    buyInterpret.send("QUANTITY.DECREASECLICKED");
+  if (event.action === "decrease") {
+    buyInterpret.send("QUANTITY.DECREASECLICKED", event);
   }
-  if (event === "increase") {
-    buyInterpret.send("QUANTITY.INCREASECLICKED");
+  if (event.action === "increase") {
+    buyInterpret.send("QUANTITY.INCREASECLICKED", event);
   }
   if (event === "buy") {
     buyInterpret.send("BUYNFT.CLICKED");

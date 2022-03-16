@@ -4,7 +4,7 @@ const wallet_addr = "0x9b4c4286cd67f9E20e79B1f8Efd25350646f5b0B";
 
 export const services = {
   checkWalletConnection: async () => {
-    return true;
+    return "wallet_address";
   },
   fetchWhitelistStatus: async () => {
     let results: Whitelist;
@@ -43,25 +43,41 @@ interface Whitelist {
   };
 }
 
+interface BuyOrder {
+  nftName: string;
+  // contract_address: string;
+  quantity: number;
+}
+
 export const buyNFTMachine = createMachine(
   {
     id: "BUYNFT",
     tsTypes: {} as import("./fixedprice-BuyNFT-machine.typegen").Typegen0,
     schema: {
-      context: {} as { whitelistData: Whitelist; quantity: number },
+      context: {} as {
+        whitelistData: Whitelist;
+        totalWeight: number;
+        buy_order: BuyOrder[];
+      },
       events: {} as
         | { type: "BUYNFT.CLICKED" }
-        | { type: "QUANTITY.INCREASECLICKED" }
-        | { type: "QUANTITY.DECREASECLICKED" }
+        | { type: "QUANTITY.INCREASECLICKED"; nftName: string }
+        | { type: "QUANTITY.DECREASECLICKED"; nftName: string }
         | { type: "QUOTA.CHECKED" }
         | { type: "RETRY" },
       services: {} as {
+        checkWalletConnection: { data: string };
         fetchWhitelistStatus: { data: Whitelist };
       },
     },
     context: {
       whitelistData: null,
-      quantity: 1,
+      totalWeight: 0,
+      buy_order: [
+        { nftName: "silver", quantity: 0 },
+        { nftName: "gold", quantity: 0 },
+        { nftName: "platinum", quantity: 0 },
+      ],
     },
     states: {
       checkWalletConnection: {
@@ -107,11 +123,11 @@ export const buyNFTMachine = createMachine(
       canBuy: {
         on: {
           "QUANTITY.INCREASECLICKED": {
-            target: "checkQuota",
+            // target: "checkQuota",
             actions: "increaseQuantity",
           },
           "QUANTITY.DECREASECLICKED": {
-            target: "checkQuota",
+            // target: "checkQuota",
             actions: "decreaseQuantity",
           },
           "BUYNFT.CLICKED": {
@@ -145,21 +161,40 @@ export const buyNFTMachine = createMachine(
           whitelistData: event.data,
         };
       }),
-      increaseQuantity: assign((context) => {
-        const q =
-          context.quantity === context.whitelistData.remaining_quota
+      increaseQuantity: assign((context, event) => {
+        console.log("context", context, "event", event);
+        //TODO : should + by weight of each box
+        const weight =
+          context.totalWeight === context.whitelistData.remaining_quota
             ? context.whitelistData.remaining_quota
-            : context.quantity + 1;
+            : context.totalWeight + 1;
+
+        //update buy_order
+        let list = context.buy_order;
+        const i = list.find((item) => item.nftName == event.nftName).quantity;
+        let updateList = { nftName: event.nftName, quantity: i + 1 };
+        list.find((item) => item.nftName == updateList.nftName).quantity =
+          updateList.quantity;
+
         return {
           ...context,
-          quantity: q,
+          totalWeight: weight,
+          buy_order: list,
         };
       }),
-      decreaseQuantity: assign((context) => {
-        const q = context.quantity > 1 ? context.quantity - 1 : 1;
+      decreaseQuantity: assign((context, event) => {
+        const weight = context.totalWeight > 0 ? context.totalWeight - 1 : 0;
+
+        //update buy_order
+        let list = context.buy_order;
+        const i = list.find((item) => item.nftName == event.nftName).quantity;
+        let updateList = { nftName: event.nftName, quantity: i - 1 };
+        list.find((item) => item.nftName == updateList.nftName).quantity =
+          updateList.quantity;
         return {
           ...context,
-          quantity: q,
+          totalWeight: weight,
+          buy_order: list,
         };
       }),
     },
