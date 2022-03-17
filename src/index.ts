@@ -85,7 +85,7 @@ elmBuy.ports.event.subscribe((event: any) => {
   if (event.action === "increase") {
     buyInterpret.send("QUANTITY.INCREASECLICKED", event);
   }
-  if (event === "buy") {
+  if (event.action === "buy") {
     buyInterpret.send("BUYNFT.CLICKED");
   }
 });

@@ -1,8 +1,42 @@
 import { assign, createMachine } from "xstate";
 
+interface Whitelist {
+  project_id: string;
+  round_id: string;
+  wallet_address: string;
+  total_quota: number;
+  remaining_quota: number;
+  meta: {
+    tier: string;
+    point: string;
+    level: string;
+  };
+}
+
+interface BuyOrder {
+  nftName: string;
+  // contract_address: string;
+  quantity: number;
+}
+
 const wallet_addr = "0x9b4c4286cd67f9E20e79B1f8Efd25350646f5b0B";
 
 export const services = {
+  fetchRounds: async () => {
+    let results: any;
+    await fetch(`/services/fixed-price/ampleia`, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log("fetch Rounds : ", res);
+        results = res.results;
+      });
+    return results;
+  },
   checkWalletConnection: async () => {
     return "wallet_address";
   },
@@ -59,31 +93,13 @@ export const services = {
   },
 };
 
-interface Whitelist {
-  project_id: string;
-  round_id: string;
-  wallet_address: string;
-  total_quota: number;
-  remaining_quota: number;
-  meta: {
-    tier: string;
-    point: string;
-    level: string;
-  };
-}
-
-interface BuyOrder {
-  nftName: string;
-  // contract_address: string;
-  quantity: number;
-}
-
 export const buyNFTMachine = createMachine(
   {
     id: "BUYNFT",
     tsTypes: {} as import("./fixedprice-BuyNFT-machine.typegen").Typegen0,
     schema: {
       context: {} as {
+        roundsInfo: any;
         whitelistData: Whitelist;
         totalWeight: number;
         buy_order: BuyOrder[];
@@ -95,11 +111,13 @@ export const buyNFTMachine = createMachine(
         | { type: "QUOTA.CHECKED" }
         | { type: "RETRY" },
       services: {} as {
+        fetchRounds: { data: any };
         checkWalletConnection: { data: string };
         fetchWhitelistStatus: { data: Whitelist };
       },
     },
     context: {
+      roundsInfo: null,
       whitelistData: null,
       totalWeight: 0,
       buy_order: [
@@ -109,6 +127,16 @@ export const buyNFTMachine = createMachine(
       ],
     },
     states: {
+      loadRounds: {
+        invoke: {
+          id: "fetchRounds",
+          src: "fetchRounds",
+          onDone: {
+            target: "checkWalletConnection",
+            actions: "updateRoundsInfo",
+          },
+        },
+      },
       checkWalletConnection: {
         invoke: {
           id: "connectwallet",
@@ -177,11 +205,14 @@ export const buyNFTMachine = createMachine(
       complete: {},
       error: {},
     },
-    initial: "checkWalletConnection",
+    initial: "loadRounds",
   },
   {
     services,
     actions: {
+      updateRoundsInfo: assign((context, event) => {
+        return { ...context, roundsInfo: event.data };
+      }),
       updateWhitelistStatus: assign((context, event) => {
         return {
           ...context,

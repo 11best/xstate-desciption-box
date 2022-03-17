@@ -3,11 +3,18 @@
 export interface Typegen0 {
   "@@xstate/typegen": true;
   eventsCausingActions: {
+    updateRoundsInfo: "done.invoke.fetchRounds";
     updateWhitelistStatus: "done.invoke.fetch-whiteliststatus";
+    resetContext: "QUOTA.CHECKED";
     increaseQuantity: "QUANTITY.INCREASECLICKED";
     decreaseQuantity: "QUANTITY.DECREASECLICKED";
   };
   internalEvents: {
+    "done.invoke.fetchRounds": {
+      type: "done.invoke.fetchRounds";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
     "done.invoke.fetch-whiteliststatus": {
       type: "done.invoke.fetch-whiteliststatus";
       data: unknown;
@@ -19,6 +26,10 @@ export interface Typegen0 {
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
     "xstate.init": { type: "xstate.init" };
+    "error.platform.fetchRounds": {
+      type: "error.platform.fetchRounds";
+      data: unknown;
+    };
     "error.platform.connectwallet": {
       type: "error.platform.connectwallet";
       data: unknown;
@@ -38,6 +49,7 @@ export interface Typegen0 {
     };
   };
   invokeSrcNameMap: {
+    fetchRounds: "done.invoke.fetchRounds";
     checkWalletConnection: "done.invoke.connectwallet";
     fetchWhitelistStatus: "done.invoke.fetch-whiteliststatus";
     buyNFTRequest: "done.invoke.buyNFT-request";
@@ -49,7 +61,8 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingServices: {
-    checkWalletConnection: "RETRY";
+    fetchRounds: "xstate.init";
+    checkWalletConnection: "done.invoke.fetchRounds" | "RETRY";
     fetchWhitelistStatus: "done.invoke.connectwallet";
     buyNFTRequest: "BUYNFT.CLICKED";
   };
@@ -59,6 +72,7 @@ export interface Typegen0 {
   };
   eventsCausingDelays: {};
   matchesStates:
+    | "loadRounds"
     | "checkWalletConnection"
     | "checkWhitelist"
     | "checkQuota"
