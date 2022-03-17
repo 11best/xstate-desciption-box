@@ -47,7 +47,6 @@ export const services = {
       {
         method: "GET",
         headers: {
-          "Access-Control-Allow-Origin": "*",
           accept: "application/json",
           Authorization: "Bearer xxxxx",
         },
@@ -72,15 +71,21 @@ export const services = {
         buyer_address: wallet_addr,
         buy_order: [
           {
-            contract_address: "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+            contract_address:
+              context.roundsInfo[0].fixed_price_sales[0].sample_nft
+                .contract_address,
             quantity: context.buy_order[0].quantity,
           },
           {
-            contract_address: "0x2d677Dbe16752A066ef83e382DcC04D7003A61Ed ",
+            contract_address:
+              context.roundsInfo[0].fixed_price_sales[1].sample_nft
+                .contract_address,
             quantity: context.buy_order[1].quantity,
           },
           {
-            contract_address: "0xcdd02E7849CBBfeaF6401cfDc434999ff5fC0f04",
+            contract_address:
+              context.roundsInfo[0].fixed_price_sales[2].sample_nft
+                .contract_address,
             quantity: context.buy_order[2].quantity,
           },
         ],
